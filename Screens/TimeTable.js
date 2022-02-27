@@ -1,14 +1,11 @@
 import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, Dimensions, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Dimensions, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { ListItem } from 'react-native-elements';
 import AppHeader from '../Components/AppHeader';
 import app from '../config';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import moment from 'moment';
-import 'intl';
-import 'intl/locale-data/jsonp/en';
-import { useIntl } from 'react-intl';
 
 moment().format();
 var rain = 'rgba(44, 120, 115, 0.8)'
@@ -23,38 +20,141 @@ var linen = '#EAE2D6'
 var rainClass = '#4B908C'
 
 
+const hours = [
+    {
+        title: "12 AM",
+        id: 0
+    },
+    {
+        title: "1 AM",
+        id: 1
+    },
+    {
+        title: "2 AM",
+        id: 2
+    },
+    {
+        title: "3 AM",
+        id: 3
+    },
+    {
+        title: "4 AM",
+        id: 4
+    },
+    {
+        title: "5 AM",
+        id: 5
+    },
+    {
+        title: "6 AM",
+        id: 6
+    },
+    {
+        title: "7 AM",
+        id: 7
+    },
+    {
+        title: "8 AM",
+        id: 8
+    },
+    {
+        title: "9 AM",
+        id: 9
+    },
+    {
+        title: "10 AM",
+        id: 10
+    },
+    {
+        title: "11 AM",
+        id: 11
+    },
+    {
+        title: "12 AM",
+        id: 12
+    },
+    {
+        title: "1 PM",
+        id: 13
+    },
+    {
+        title: "2 PM",
+        id: 14
+    },
+    {
+        title: "3 PM",
+        id: 15
+    },
+    {
+        title: "4 PM",
+        id: 16
+    },
+    {
+        title: "5 PM",
+        id: 17
+    },
+    {
+        title: "6 PM",
+        id: 18
+    },
+    {
+        title: "7 PM",
+        id: 19
+    },
+    {
+        title: "8 PM",
+        id: 20
+    },
+    {
+        title: "9 PM",
+        id: 21
+    },
+    {
+        title: "10 PM",
+        id: 22
+    },
+    {
+        title: "11 PM",
+        id: 23
+    },
+    {
+        title: "12 PM",
+        id: 24
+    }
+]
+
 const days = [
     {
         title: "  ",
-        id: "0"
+        id: 0
     },
     {
         title: "Monday",
-        id: "1"
+        id: 1
     },
     {
         title: "Tuesday",
-        id: "2"
+        id: 2
     },
     {
         title: "Wednesday",
-        id: "3"
+        id: 3
     },
     {
         title: "Thursday",
-        id: "4"
+        id: 4
     },
     {
         title: "Friday",
-        id: "5"
+        id: 5
     },
     {
         title: "Saturday",
-        id: "6"
+        id: 6
     },
     {
         title: "Sunday",
-        id: "7"
+        id: 7
     }
 ]
 const width = Dimensions.get('window').width
@@ -133,32 +233,19 @@ export default class TimeTable extends React.Component {
     }
 
 
-    getVisibleHours = () => {
-        var currentHour = moment().hour()
-        var hourTwo = moment().add(1, 'hour').hour()
-        var hourThree = moment().add(2, 'hour').hour()
-        var hourFour = moment().add(3, 'hour').hour()
-        var hourFive = moment().add(4, 'hour').hour()
-        var hourSix = moment().add(5, 'hour').hour()
-        var hourSeven = moment().add(6, 'hour').hour()
-        var hourEight = moment().add(7, 'hour').hour()
-        var hourNine = moment().add(8, 'hour').hour()
-
-        var visibleHours = []
-        visibleHours.push(currentHour, hourTwo, hourThree, hourFour, hourFive, hourSix, hourSeven, hourEight, hourNine);
-
-        return visibleHours;
-    }
-
-
     keyExtractor = (item, index) => index.toString()
 
 
     renderItemDays = ({ item, i }) => {
+        var x = item.id - 1
+        var y = item.id
+        var dates = this.getWeek()
+        var date = dates.slice(x, y)
         return(
             <ListItem bottomDivider = {true} style = {{ width: '12.5%', borderColor: '#434659', borderWidth: 1 }} containerStyle = {{ backgroundColor: blueBlack }}>
                 <ListItem.Content style = {{  height: height/21 }}>
-                    <ListItem.Title style = {{ color: linen }}>{item.title}</ListItem.Title>
+                    <ListItem.Title style = {[ styles.listItemDaysText, { fontWeight: 'bold' } ]}>{date}</ListItem.Title>
+                    <ListItem.Title style = {styles.listItemDaysText}>{item.title}</ListItem.Title>
                 </ListItem.Content>
             </ListItem>
         )
@@ -169,7 +256,7 @@ export default class TimeTable extends React.Component {
         return(
             <ListItem bottomDivider = {true} style = {{ width: '100%', borderColor: 'purple', borderWidth: 2 }}>
                 <ListItem.Content>
-                    <ListItem.Title style = {{ alignSelf: 'center' }}>{item.title}</ListItem.Title>
+                    <ListItem.Title style = {{ alignSelf: 'center', fontFamily: 'Lora' }}>{item.title}</ListItem.Title>
                 </ListItem.Content>
             </ListItem>
         )
@@ -178,21 +265,19 @@ export default class TimeTable extends React.Component {
 
     renderItemHours = ({ item }) => {
         var hour
-        if( item < 12 ){
-            hour = item + ":00" + " AM"
+
+        if( item.id < 10 ){
+            hour = "0" + item.id + ":00"
         }
-        else if( item === 12){
-            hour = item + ":00" + " PM"
-        }
-        else if( item > 12 ){
-            hour = item - 12 + ":00" + " PM"
+        else if( item.id === 10 || item.id > 10  ){
+            hour = item.id + ":00"
         }
 
         return(
-            <ListItem bottomDivider = {true} style = {{ borderWidth: 1, borderColor: '#434659' }} containerStyle = {{ backgroundColor: blueBlack }}>
+            <ListItem bottomDivider = {true} style = {{ borderWidth: 1, borderColor: '#434659' }} containerStyle = {{ backgroundColor: blueBlack, height: height/12 }}>
                 <ListItem.Content>
-                    <ListItem.Title style = {{ color: linen }}>{item}:00</ListItem.Title>
-                    <ListItem.Subtitle style = {{ color: linen }}>{hour}</ListItem.Subtitle>
+                    <ListItem.Title style = {[ styles.listItemDaysText, { fontWeight: 'bold' } ]}>{item.title}</ListItem.Title>
+                    <ListItem.Subtitle style = {styles.listItemDaysText}>{hour}</ListItem.Subtitle>
                 </ListItem.Content>
             </ListItem>
         )
@@ -200,10 +285,8 @@ export default class TimeTable extends React.Component {
 
     
     renderItemMonday = ({ item }) => {
-
         var classes = this.state.classesData;
         var classItem, isClass, x, classData;
-        // change in each renderItem
         var day = 1;
         var length = classes.length
         var definiteClassTime
@@ -215,10 +298,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -243,15 +327,15 @@ export default class TimeTable extends React.Component {
                     width >= 826 ? [ styles.renderItemActiveClass ] : [ styles.renderItemActiveClassPhone ]
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: rainClass } : {}
+                    width >= 826 ? styles.listItemOddContainer : {}
                 }>
                     <ListItem.Content>
                         <TouchableOpacity
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: periwinkle }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
                         
                     </ListItem.Content>
@@ -264,11 +348,11 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 } 
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: rain } ]: [ styles.renderItemContent , { backgroundColor: rain } ]
+                    moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: periwinkle }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
@@ -292,10 +376,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -320,7 +405,7 @@ export default class TimeTable extends React.Component {
                     width >= 826 ? [ styles.renderItemActiveClass ] : styles.renderItemActiveClassPhone
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: cadetBlue } : {}
+                    width >= 826 ? styles.listItemEvenContainer : {}
                 }>
                     <ListItem.Content>
 
@@ -328,8 +413,8 @@ export default class TimeTable extends React.Component {
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: smog }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: smogSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemEvenTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
 
                     </ListItem.Content>
@@ -342,15 +427,16 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 }
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: cadetBlue } ]: [ styles.renderItemContent, { backgroundColor: cadetBlue } ]
+                    moment().day() === day ? styles.renderItemTodayContentEven: styles.renderItemContentEven
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: smog }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: smogSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemEvenTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
         }
+
     }
 
 
@@ -370,10 +456,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -390,22 +477,23 @@ export default class TimeTable extends React.Component {
             }
 
         }
-        
+    
+
         if( isClass === true ){
             return(
                 <ListItem bottomDivider = {true} style = {
-                    width >= 826 ? [ styles.renderItemActiveClass, { backgroundColor: rain } ] : [ styles.renderItemActiveClassPhone, { backgroundColor: rain } ]
+                    width >= 826 ? [ styles.renderItemActiveClass ] : [ styles.renderItemActiveClassPhone ]
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: rainClass } : {}
+                    width >= 826 ? styles.listItemOddContainer : {}
                 }>
                     <ListItem.Content>
                         <TouchableOpacity
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: periwinkle }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
                         
                     </ListItem.Content>
@@ -418,15 +506,16 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 } 
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: rain } ]: [ styles.renderItemContent , { backgroundColor: rain } ]
+                    moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: periwinkle }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
-        } 
+        }
+
     }
 
 
@@ -446,10 +535,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -474,7 +564,7 @@ export default class TimeTable extends React.Component {
                     width >= 826 ? [ styles.renderItemActiveClass ] : styles.renderItemActiveClassPhone
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: cadetBlue } : {}
+                    width >= 826 ? styles.listItemEvenContainer : {}
                 }>
                     <ListItem.Content>
 
@@ -482,8 +572,8 @@ export default class TimeTable extends React.Component {
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: smog }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: smogSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemEvenTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
 
                     </ListItem.Content>
@@ -496,11 +586,11 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 }
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: cadetBlue } ]: [ styles.renderItemContent, { backgroundColor: cadetBlue } ]
+                    moment().day() === day ? styles.renderItemTodayContentEven: styles.renderItemContentEven
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: smog }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: smogSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemEvenTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
@@ -525,10 +615,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -550,18 +641,18 @@ export default class TimeTable extends React.Component {
         if( isClass === true ){
             return(
                 <ListItem bottomDivider = {true} style = {
-                    width >= 826 ? [ styles.renderItemActiveClass, { backgroundColor: rain } ] : [ styles.renderItemActiveClassPhone, { backgroundColor: rain } ]
+                    width >= 826 ? [ styles.renderItemActiveClass ] : [ styles.renderItemActiveClassPhone ]
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: rainClass } : {}
+                    width >= 826 ? styles.listItemOddContainer : {}
                 }>
                     <ListItem.Content>
                         <TouchableOpacity
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: periwinkle }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
                         
                     </ListItem.Content>
@@ -574,11 +665,11 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 } 
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: rain } ]: [ styles.renderItemContent , { backgroundColor: rain } ]
+                    moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: periwinkle }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
@@ -603,10 +694,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -631,7 +723,7 @@ export default class TimeTable extends React.Component {
                     width >= 826 ? [ styles.renderItemActiveClass ] : styles.renderItemActiveClassPhone
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: cadetBlue } : {}
+                    width >= 826 ? styles.listItemEvenContainer : {}
                 }>
                     <ListItem.Content>
 
@@ -639,8 +731,8 @@ export default class TimeTable extends React.Component {
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: smog }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: smogSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemEvenTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
 
                     </ListItem.Content>
@@ -653,11 +745,11 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 }
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: cadetBlue } ]: [ styles.renderItemContent, { backgroundColor: cadetBlue } ]
+                    moment().day() === day ? styles.renderItemTodayContentEven: styles.renderItemContentEven
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: smog }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: smogSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemEvenTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
@@ -682,10 +774,11 @@ export default class TimeTable extends React.Component {
             var classDay = moment( classItem.class_date ).day()
             var classStartHour = moment( classItem.class_starting_timing ).hour()
             var classTime = moment( classItem.class_starting_timing ).format('HH:mm')
+            var hour = item.id
 
             if( classDay === day ){
 
-                if( classStartHour === item ){
+                if( classStartHour === hour ){
                     isClass = true
                     classData = classItem
                     definiteClassTime = classTime
@@ -707,18 +800,18 @@ export default class TimeTable extends React.Component {
         if( isClass === true ){
             return(
                 <ListItem bottomDivider = {true} style = {
-                    width >= 826 ? [ styles.renderItemActiveClass, { backgroundColor: rain } ] : [ styles.renderItemActiveClassPhone, { backgroundColor: rain } ]
+                    width >= 826 ? [ styles.renderItemActiveClass ] : [ styles.renderItemActiveClassPhone ]
                 }
                 containerStyle = {
-                    width >= 826 ? { backgroundColor: rainClass } : {}
+                    width >= 826 ? styles.listItemOddContainer : {}
                 }>
                     <ListItem.Content>
                         <TouchableOpacity
                             onPress = {()=>{
                                 this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
                             }}>
-                                <ListItem.Title style = {{ color: periwinkle }}>{ definiteClassTime }</ListItem.Title>
-                                <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>{ classData.class_name }</ListItem.Subtitle>
+                                <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
                         </TouchableOpacity>
                         
                     </ListItem.Content>
@@ -731,11 +824,11 @@ export default class TimeTable extends React.Component {
                     moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
                 } 
                 containerStyle = { 
-                    moment().day() === day ? [ styles.renderItemTodayContent, { backgroundColor: rain } ]: [ styles.renderItemContent , { backgroundColor: rain } ]
+                    moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
                 }>
                     <ListItem.Content>
-                        <ListItem.Title style = {{ color: periwinkle }}>{item}:00</ListItem.Title>
-                        <ListItem.Subtitle style = {{ color: periwinkleSubtitle }}>No Class</ListItem.Subtitle>
+                        <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
+                        <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
                     </ListItem.Content>
                 </ListItem>
             )
@@ -788,6 +881,20 @@ export default class TimeTable extends React.Component {
 
         return renderItemThing
     }
+
+
+    getWeek = () => {
+        var currentDate = new Date
+        var week = []
+
+        for ( var i = 1 ; i <= 7 ; i++ ){
+            var firstDay = currentDate.getDate() - currentDate.getDay() + i
+            var day = new Date(currentDate.setDate(firstDay)).toISOString().slice(8, 10)
+            week.push(day)
+        }
+
+        return week;
+    }
  
 
     render(){
@@ -800,7 +907,7 @@ export default class TimeTable extends React.Component {
                         <AppHeader title = "Time Table" />
                     </View>       
     
-                    <View style = {{ height: '100%' }}>
+                    <View style = {{ height: '100%', width: '100%' }}>
     
                         <View style = {{ width: '100%' }}>
     
@@ -813,84 +920,80 @@ export default class TimeTable extends React.Component {
     
                         </View>
     
-                        <View style = {{ flex: 7, flexDirection: 'row', height: '100%' }}>
+                        <ScrollView refreshControl = { 
+                            <RefreshControl refreshing = {true} onRefresh = { ()=>{
+                                try{
+                                    this.fetchClassesData()
+                                    console.log("Refreshed")
+                                }
+                                catch(error){
+                                    var errorMessage = error.message
+                                    return alert(errorMessage)
+                                }
+                            }}/>
+                        }>
 
-                            <ScrollView scrollEnabled = {true} horizontal = {true}>
+                            <View style = {{ height: '100%', width: '100%', display: 'flex', flexDirection: 'row', flex: 8 }}>
 
                                 <FlatList 
-                                    data = {this.getVisibleHours()}
+                                    data = {hours}
                                     renderItem = {this.renderItemHours}
                                     keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemMonday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemTuesday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemWednesday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemThursday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                               <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemFriday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemSaturday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
-                                />
-    
-                                <FlatList
-                                    data = {this.getVisibleHours()}
-                                    renderItem = {this.renderItemSunday}
-                                    keyExtractor = {this.keyExtractor}
-                                    contentContainerStyle = {{ width: width/8 }}
-                                    extraData = {this.state.classesData}
-                                    scrollEnabled = {false}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
                                 />
 
-                            </ScrollView>
-    
-                        </View>
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemMonday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemTuesday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemWednesday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemThursday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemFriday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemSaturday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                                <FlatList 
+                                    data = {hours} 
+                                    renderItem = {this.renderItemSunday}
+                                    keyExtractor = {this.keyExtractor}
+                                    contentContainerStyle = {{ width: width/8, overflow: 'hidden' }}
+                                />
+
+                            </View>
+
+                        </ScrollView>
     
                     </View>
     
@@ -919,7 +1022,7 @@ export default class TimeTable extends React.Component {
     
                                 <View>
                                     <FlatList
-                                        data = {this.getVisibleHours()}
+                                        data = {hours}
                                         renderItem = {this.whichFunctionToRender()}
                                         keyExtractor = {this.keyExtractor}
                                         scrollEnabled = {true}
@@ -952,6 +1055,7 @@ const styles = StyleSheet.create({
     },
 
     renderItemContent: {
+        height: height/12
     },
 
     renderItemTodayClass: {
@@ -964,7 +1068,8 @@ const styles = StyleSheet.create({
     },
 
     renderItemTodayContent: {
-        backgroundColor: '#EAE2D6'
+        backgroundColor: '#EAE2D6',
+        height: height/12
     },
 
     renderItemClassPhone: {
@@ -975,6 +1080,63 @@ const styles = StyleSheet.create({
     renderItemActiveClassPhone: {
         borderColor: 'green',
         borderWidth: 2, 
+    },
+
+    listItemDaysText: {
+        color: linen,  
+        fontFamily: 'Lora'
+    },
+
+    listItemOddTitle: {
+        color: periwinkle, 
+        fontFamily: 'Lora'
+    },
+
+    listItemOddSubtitle: {
+        color: periwinkleSubtitle, 
+        fontFamily: 'Lora'
+    },
+
+    listItemOddContainer: {
+        backgroundColor: rainClass, 
+        height: height/12 
+    },
+
+    renderItemTodayContentOdd: {
+        backgroundColor: '#EAE2D6',
+        height: height/12,
+        backgroundColor: rain
+    },
+
+    renderItemContentOdd: {
+        height: height/12,
+        backgroundColor: rain 
+    },
+
+    listItemEvenContainer: {
+        backgroundColor: cadetBlue, 
+        height: height/12
+    },
+
+    listItemEvenTitle: {
+        color: smog, 
+        fontFamily: 'Lora' 
+    },
+
+    listItemEvenSubtitle: {
+        color: smogSubtitle, 
+        fontFamily: 'Lora' 
+    },
+
+    renderItemTodayContentEven: {
+        backgroundColor: '#EAE2D6',
+        height: height/12,
+        backgroundColor: cadetBlue 
+    },
+
+    renderItemContentEven: {
+        height: height/12,
+        backgroundColor: cadetBlue 
     }
 
 })
