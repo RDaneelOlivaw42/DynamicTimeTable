@@ -25,7 +25,13 @@ export default class CustomSideBarMenu extends React.Component {
 
     componentDidMount(){
         this.getUserId()
-        this.fetchImage(this.state.userId)
+    }
+
+
+    componentDidUpdate(){
+        if( this.state.runFetchImage === 0 ){
+            this.fetchImage(this.state.userId)
+        }
     }
 
 
@@ -98,11 +104,14 @@ export default class CustomSideBarMenu extends React.Component {
             var errorCode = error.code
             console.log(errorMessage)
         })
+
+        this.setState({
+            runFetchImage: 1
+        })
     }
 
 
     render(){
-        this.fetchImage(this.state.userId)
         return(
             <View style = {styles.container}>
 

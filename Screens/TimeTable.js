@@ -4,7 +4,7 @@ import { ListItem } from 'react-native-elements';
 import AppHeader from '../Components/AppHeader';
 import app from '../config';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import moment from 'moment';
 
 moment().format();
@@ -168,10 +168,10 @@ export default class TimeTable extends React.Component {
 
         this.state = {
             userId: '',
-            classesData: []
+            classesData: [],
+            runFetchClassesData: 0,
+            sentNotification: false
         }
-
-        this.fetchClassesData();
     }
 
 
@@ -181,12 +181,15 @@ export default class TimeTable extends React.Component {
 
 
     componentDidUpdate(){
-        if(this.state.classesData.length === 0){
+        if( this.state.runFetchClassesData === 0 ){
             this.fetchClassesData()
         }
-        else{
+    }
 
-        }
+
+    componentWillUnmount(){
+        this.fetchClassesData();
+        this.checkToSendNotification();
     }
 
 
@@ -211,7 +214,6 @@ export default class TimeTable extends React.Component {
         const db = getFirestore(app);
         var userId = this.state.userId
 
-
         const q = query( collection(db, "Scheduled Classes"), where('user_id','==',userId) )
 
         const querySnapshot = await getDocs(q)
@@ -221,15 +223,97 @@ export default class TimeTable extends React.Component {
 
                 var updatedClassesData = querySnapshot.docs.map( document => document.data() )
                 this.setState({
-                    classesData: updatedClassesData
+                    classesData: updatedClassesData,
                 })
-                return updatedClassesData
 
             })
         }
         else{
             console.log("Somehow, this is empty");
         }
+
+        this.setState({
+            runFetchClassesData: 1
+        })
+
+        this.checkToSendNotification()
+    }
+
+
+    checkToSendNotification = () => {
+
+        if( this.state.runFetchClassesData === 1 ){
+
+            var data = this.state.classesData
+            var length = data.length
+
+            if( length !== 0 ){
+
+                for( var x = 0; x < length; x++ ){
+    
+                    var classItem = data[x]
+
+                    var today = moment().day()
+                    var classDay = moment( classItem.class_date ).day()
+
+                    if( today === classDay ){
+
+                        //getting unix seconds for today (including time), for today (excluding time), then subtract
+                        var date = new Date().toLocaleDateString('en-GB')
+                        const [dd, mm, yyyy] = date.split("/")
+                        var formattedDate = `${yyyy}-${mm}-${dd}`
+                        var currentDateMoment = moment( formattedDate ).unix()
+                        var currentMoment = moment().unix()
+    
+                        var currentTime = currentMoment - currentDateMoment
+    
+                        // getting unix seconds for class (including time), for class (excluding starting time), then subtract
+                        var classMoment = moment( classItem.class_starting_timing ).unix()
+                        var classDateMoment = moment( classItem.class_date ).unix()
+                        var classTime = classMoment - classDateMoment
+
+                        //time Left to class
+                        var timeLeft = classTime - currentTime
+
+                        if( timeLeft <= 3600 && timeLeft > 0 && this.state.sentNotification === false ){
+
+                            var timeLeftRaw = timeLeft/60
+                            var timeLeftFinal = timeLeftRaw.toString().substring(0, 2)
+
+                            this.setState({
+                                sentNotification: true
+                            })
+
+                            if( this.state.sentNotification === true ){
+                                this.sendNotification(classItem, timeLeftFinal)
+                            }
+
+                        }
+
+                    }    
+    
+                }
+    
+            }
+            else{
+    
+            }
+        }
+
+    }
+
+
+    sendNotification = async ( classItem, timeLeft ) => {
+        const db = getFirestore(app)
+
+        const refDoc = await addDoc( collection(db, 'All Notifications'), {
+            class_name: classItem.class_name,
+            class_time: classItem.class_starting_timing,
+            message: "You have " + classItem.class_name + " in " + timeLeft + " minutes",
+            time_left: timeLeft + " minutes",
+            user_id: this.state.userId,
+            mark_as_read: false
+        });
     }
 
 
@@ -361,10 +445,8 @@ export default class TimeTable extends React.Component {
 
 
     renderItemTuesday = ({ item }) => {
-
         var classes = this.state.classesData;
         var classItem, isClass, x, classData;
-        // change in each renderItem
         var day = 2;
         var length = classes.length
         var definiteClassTime
