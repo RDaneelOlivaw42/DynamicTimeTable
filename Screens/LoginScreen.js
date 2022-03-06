@@ -1,9 +1,16 @@
 import React from "react";
-import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Modal, ScrollView, StyleSheet, ImageBackground } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Modal, ScrollView, StyleSheet, ImageBackground, Platform, Dimensions } from 'react-native';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth, updateProfile, sendPasswordResetEmail } from 'firebase/auth';      
 import { getFirestore, collection, addDoc, getDocs, where, limit, updateDoc, doc, query } from 'firebase/firestore';
 import app from '../config';
+import * as Font from 'expo-font';
 
+const width = Dimensions.get('screen').width
+
+var customFonts = {
+    'Lora-Bold': require('../assets/font/Lora-Bold.ttf'),
+    'Lora': require('../assets/font/Lora-Regular.ttf')
+};
 
 export default class LoginScreen extends React.Component {
 
@@ -21,13 +28,23 @@ export default class LoginScreen extends React.Component {
     }
 
 
+    async _loadFontsAsync(){
+        await Font.loadAsync(customFonts);
+    }
+
+
+    componentDidMount(){
+        this._loadFontsAsync();
+    }
+
+
     showModal = () => {
         return(
             <Modal
               animationType = 'fade'
               transparent = {true}
               visible = {this.state.isModalVisible}>
-                  <View style = {styles.form}>
+                  <View style = {[ styles.form, width >= 826 ? { } : { width: '80%' } ]}>
 
                       <ScrollView>
                           <KeyboardAvoidingView>
@@ -98,7 +115,7 @@ export default class LoginScreen extends React.Component {
                               />  
 
                               <TouchableOpacity
-                                style = {styles.formButton}
+                                style = {[ styles.formButton, width >= 826 ? { width: '15%' } : { width: '50%' } ]}
                                 onPress = {()=>{
                                     this.userSignUp(this.state.emailID, this.state.password);
                                     this.setState({
@@ -109,7 +126,7 @@ export default class LoginScreen extends React.Component {
                               </TouchableOpacity>
 
                               <TouchableOpacity
-                                style = {styles.formButton}
+                                style = {[ styles.formButton, width >= 826 ? { width: '15%' } : { width: '50%' } ]}
                                 onPress = {()=>{
                                     this.setState({
                                         isModalVisible: false
@@ -248,79 +265,151 @@ export default class LoginScreen extends React.Component {
     }
 
 
-
     render(){
-        return(
-            <View style = {styles.container}>
-                <ImageBackground source = {require('../assets/bg_img.jpeg')} style = {styles.imageBackground} resizeMode = 'cover'>
-
-                <ScrollView style = {{ marginTop: '10%', marginBottom: '20%' }}>
-
-                <View style = {styles.titleBackground}>
-                    <Text style = {styles.title}>DYNAMIC TIME TABLE</Text>
+        if( Dimensions.get('window').width >= 826 ){
+            return(
+                <View style = {styles.container}>
+                    <ImageBackground source = {require('../assets/bg_img.jpeg')} style = {styles.imageBackground} resizeMode = 'cover'>
+    
+                    <ScrollView style = {{ marginTop: '10%', marginBottom: '20%' }}>
+    
+                    <View style = {styles.titleBackground}>
+                        <Text style = {[ styles.title]}>DYNAMIC TIME TABLE</Text>
+                    </View>
+    
+                    <View>
+                        {this.showModal()}
+                    </View>
+    
+                    <TextInput 
+                      placeholder = {"Email ID"}
+                      placeholderTextColor = {'#F4EBDB'}
+                      keyboardType = 'email-address'
+                      autoFocus = {true}
+                      onChangeText = { (text)=>{
+                          this.setState({
+                              emailID: text
+                          })
+                      }}
+                      style = {styles.textInput}
+                      blurOnSubmit = {true}
+                    />
+    
+                    <TextInput 
+                      placeholder = {"Password"}
+                      placeholderTextColor = {'#F4EBDB'}
+                      secureTextEntry = {true}
+                      onChangeText = { (text)=>{
+                          this.setState({
+                              password: text
+                          })
+                      }}
+                      style = {styles.textInput}
+                    />
+    
+                    <TouchableOpacity
+                      style = {styles.button}
+                      onPress = { ()=>{
+                          this.userLogin(this.state.emailID, this.state.password);
+                      }}>
+                        <Text style = {styles.buttonText}>Login</Text>
+                    </TouchableOpacity>
+    
+                    <TouchableOpacity
+                      style = {styles.button}
+                      onPress = { ()=>{
+                          this.setState({
+                              isModalVisible: true
+                          })
+                      }}>
+                        <Text style = {styles.buttonText}>Sign up</Text>
+                    </TouchableOpacity>
+    
+                    <TouchableOpacity 
+                      style = {styles.forgotButton}
+                      onPress = {()=>{
+                          this.resetPassword()
+                      }}>
+                        <Text style = {styles.forgotText}>Forgot Password?</Text>
+                    </TouchableOpacity>
+    
+                    </ScrollView>
+    
+                    </ImageBackground>
                 </View>
+            )
+        }
+        else if( Platform.OS === 'android'  || Platform.OS === 'ios' ){
+            return(
+                <View style = {{ width: '100%', height: '100%' }}>
+                    <ImageBackground source = {require('../assets/bg_img.jpeg')} style = {styles.imageBackgroundAndroid} resizeMode = 'cover'>
+                        <ScrollView style = {{ paddingTop: '30%', paddingBottom: '20%' }}>
 
-                <View>
-                    {this.showModal()}
+                            <View style = {styles.titleBackground}>
+                                <Text style = {[ styles.title, { fontSize: 50 } ]}>DYNAMIC TIME TABLE</Text>
+                            </View>
+
+                            <View>
+                                {this.showModal()}
+                            </View>
+
+                            <TextInput 
+                                placeholder = {"Email ID"}
+                                placeholderTextColor = {'#F4EBDB'}
+                                keyboardType = 'email-address'
+                                autoFocus = {true}
+                                onChangeText = { (text)=>{
+                                    this.setState({
+                                        emailID: text
+                                    })
+                                }}
+                                style = {[ styles.textInput, { width: '76%', padding: 10 } ]}
+                                blurOnSubmit = {true}
+                            />
+                
+                            <TextInput 
+                                placeholder = {"Password"}
+                                placeholderTextColor = {'#F4EBDB'}
+                                secureTextEntry = {true}
+                                onChangeText = { (text)=>{
+                                    this.setState({
+                                        password: text
+                                    })
+                                }}
+                                style = {[ styles.textInput, { width: '76%', padding: 7 } ]}
+                            />
+
+                            <TouchableOpacity
+                                style = {[ styles.button, { width: '30%', padding: 10 }]}
+                                onPress = { ()=>{
+                                    this.userLogin(this.state.emailID, this.state.password);
+                                }}>
+                                    <Text style = {styles.buttonText}>Login</Text>
+                            </TouchableOpacity>
+                
+                            <TouchableOpacity
+                                style = {[ styles.button, { width: '30%', padding: 10 }]}
+                                onPress = { ()=>{
+                                    this.setState({
+                                        isModalVisible: true
+                                    })
+                                }}>
+                                    <Text style = {styles.buttonText}>Sign up</Text>
+                            </TouchableOpacity>
+                
+                            <TouchableOpacity 
+                                style = {styles.forgotButton}
+                                onPress = {()=>{
+                                    this.resetPassword()
+                                }}>
+                                    <Text style = {styles.forgotText}>Forgot Password?</Text>
+                            </TouchableOpacity>
+
+                        </ScrollView>
+                    </ImageBackground>
                 </View>
-
-                <TextInput 
-                  placeholder = {"Email ID"}
-                  placeholderTextColor = {'#F4EBDB'}
-                  keyboardType = 'email-address'
-                  autoFocus = {true}
-                  onChangeText = { (text)=>{
-                      this.setState({
-                          emailID: text
-                      })
-                  }}
-                  style = {styles.textInput}
-                  blurOnSubmit = {true}
-                />
-
-                <TextInput 
-                  placeholder = {"Password"}
-                  placeholderTextColor = {'#F4EBDB'}
-                  secureTextEntry = {true}
-                  onChangeText = { (text)=>{
-                      this.setState({
-                          password: text
-                      })
-                  }}
-                  style = {styles.textInput}
-                />
-
-                <TouchableOpacity
-                  style = {styles.button}
-                  onPress = { ()=>{
-                      this.userLogin(this.state.emailID, this.state.password);
-                  }}>
-                    <Text style = {styles.buttonText}>Login</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style = {styles.button}
-                  onPress = { ()=>{
-                      this.setState({
-                          isModalVisible: true
-                      })
-                  }}>
-                    <Text style = {styles.buttonText}>Sign up</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style = {styles.forgotButton}
-                  onPress = {()=>{
-                      this.resetPassword()
-                  }}>
-                    <Text style = {styles.forgotText}>Forgot Password?</Text>
-                </TouchableOpacity>
-
-                </ScrollView>
-
-                </ImageBackground>
-            </View>
-        )
+            )
+        }
     }
 
 }
@@ -340,6 +429,11 @@ const styles = StyleSheet.create({
         marginHorizontal: '10%'
     },
 
+    imageBackgroundAndroid: {
+        flex: 1, 
+        justifyContent: 'center',
+    },
+
     titleBackground: {
         backgroundColor: 'rgba(6, 28, 30, 0.5)', 
         padding: 20, 
@@ -350,8 +444,8 @@ const styles = StyleSheet.create({
     title: { 
         fontFamily: 'Lora-Bold', 
         color: '#F4EBDB', 
-        fontWeight: 'bold', 
-        fontSize: 80 
+        fontSize: 80,
+        fontWeight: '800' 
     },
 
     textInput: {
@@ -382,8 +476,7 @@ const styles = StyleSheet.create({
 
     buttonText: {
         color: '#F4EBDB',
-        fontFamily: 'Lora',
-        fontWeight: 'bold',
+        fontFamily: 'Lora-Bold',
         alignSelf: 'center',
         fontSize: 16
     },
@@ -416,7 +509,6 @@ const styles = StyleSheet.create({
     formButton: {
         backgroundColor: '#021C1E',
         padding: 10,
-        width: '15%',
         justifyContent: 'center',
         shadowColor: '#004445',
         shadowOffset: { width: 5, height: 5 },

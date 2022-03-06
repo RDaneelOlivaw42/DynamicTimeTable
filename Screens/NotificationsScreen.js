@@ -69,12 +69,37 @@ export default class NotificationsScreen extends React.Component {
                 var data = doc.data()
                 data["doc_id"] = id
 
-                var updatedNotificationsData = this.state.notificationsData
-                updatedNotificationsData.push(data)
+                var length = this.state.notificationsData.length
 
-                this.setState({
-                    notificationsData: updatedNotificationsData
-                })
+                if(length === 0){
+                    var updatedNotificationsData = this.state.notificationsData
+                    updatedNotificationsData.push(data)
+    
+                    this.setState({
+                        notificationsData: updatedNotificationsData
+                    })
+                }
+                else{
+                    for( var x = 0; x < length; x++ ){
+
+                        var notificationItem = this.state.notificationsData[x]
+    
+                        var exists = Object.values(notificationItem).includes(data["doc_id"])
+    
+                        if(exists){
+                            continue
+                        }
+                        else{
+                            var updatedNotificationsData = this.state.notificationsData
+                            updatedNotificationsData.push(data)
+            
+                            this.setState({
+                                notificationsData: updatedNotificationsData
+                            })
+                        }
+    
+                    }
+                }
 
             })
         }
@@ -118,10 +143,7 @@ export default class NotificationsScreen extends React.Component {
                             }}>
 
                                 <View style = {styles.centreAlign}>
-                                   <Text>
-                                       <Text style = {styles.swipeText}>Mark as read  </Text>
-                                       <Icon type = 'font-awesome' name = 'check-circle' color = '#F1DCC9' size = {30}  />
-                                    </Text>
+                                    <Icon type = 'font-awesome' name = 'check-circle' color = '#F1DCC9' size = {30}  />
                                 </View>
 
                         </TouchableOpacity>
@@ -137,10 +159,7 @@ export default class NotificationsScreen extends React.Component {
                             }}>
 
                                <View style = {styles.centreAlign}>
-                                   <Text>
-                                       <Text style = {styles.swipeText}>Mark as read  </Text>
-                                       <Icon type = 'font-awesome' name = 'check-circle' color = '#F1DCC9' size = {30}  />
-                                    </Text>
+                                    <Icon type = 'font-awesome' name = 'check-circle' color = '#F1DCC9' size = {30}  />
                                 </View>
 
                         </TouchableOpacity>
@@ -168,8 +187,8 @@ export default class NotificationsScreen extends React.Component {
     render(){
         return(
             <View>
+            
             <AppHeader title = "Notifications" />
-
 
             {
                 this.state.notificationsData.length === 0 ?
@@ -179,9 +198,9 @@ export default class NotificationsScreen extends React.Component {
                     </View>
                 )
                 : (
-                    <View style = {{ marginLeft: '3%', marginTop: '0.6%', marginRight: '3%' }}>
+                    <View style = {{ marginLeft: '3%', marginRight: '3%' }}>
 
-                        <View>
+                        <View style = {{ marginTop: '0.6%' }}>
                             <Text>
                             <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>Notifications </Text>
                             <Icon name = 'sort-desc' type = 'font-awesome' color = '#696969' size = {35} />
@@ -229,12 +248,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#021C1E', 
         paddingRight: '5%', 
         minHeight: '68%'
-    },
-
-    swipeText: {
-        fontFamily: 'Lora', 
-        color: '#F1DCC9', 
-        fontSize: 17
     },
 
     listItemContainer: {

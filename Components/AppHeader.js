@@ -2,7 +2,7 @@ import React from 'react';
 import { Header, Icon, Badge } from 'react-native-elements';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DrawerActions } from 'react-navigation-drawer';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import app from '../config';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -108,7 +108,7 @@ class AppHeader extends React.Component {
                         <Icon
                           type = 'font-awesome'
                           name = 'bars'
-                          style = {{ paddingLeft: 15, paddingTop: 7 }} 
+                          style = { Dimensions.get('window').width >= 826 ? { paddingLeft: 15, paddingTop: 7 } : { paddingLeft: 15, paddingTop: 10 } } 
                           onPress = { ()=>{
                               this.props.navigation.dispatch(DrawerActions.toggleDrawer());
                           }}
@@ -120,7 +120,7 @@ class AppHeader extends React.Component {
 
                     centerComponent = {{
                         text: this.props.title,
-                        style: { fontSize: 30, textAlign: 'center', color: '#F4EBDB', fontFamily: 'Lora-Regular' }
+                        style: { fontSize: 30, textAlign: 'center', color: '#F4EBDB', fontFamily: 'Lora' }
                     }}
                 />
             </SafeAreaProvider>

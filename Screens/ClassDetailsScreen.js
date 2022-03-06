@@ -112,16 +112,6 @@ export default class ClassDetailsScreen extends React.Component {
         const db = getFirestore(app);
         var docId
 
-       //adding document to 'Completed Classes'
-        const document = addDoc( collection(db, 'Completed Classes'), {
-            user_id: this.state.userId,
-            class_name: this.state.className,
-            class_date: this.state.classDate,
-            class_starting_timing: this.state.classStartTime,
-            class_ending_timing: this.state.classEndTime,
-            other_details: this.state.otherDetails
-        });
-
         //deleting document from Scheduled Classes
         const q = query( collection(db, "Scheduled Classes"), where('user_id','==',this.state.userId), where('class_name','==',this.state.className), where('class_date','==',this.state.classDate), where('class_starting_timing','==',this.state.classStartTime),
         where('class_ending_timing','==',this.state.classEndTime), where('other_details','==',this.state.otherDetails), limit(1))
