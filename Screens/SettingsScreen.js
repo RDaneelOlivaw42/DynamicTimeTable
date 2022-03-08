@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Dimensions } from 'react-native';
 import { Icon } from 'react-native-elements';
 import AppHeader from '../Components/AppHeader';
 import app from '../config';
@@ -215,70 +215,140 @@ export default class SettingsScreen extends React.Component {
 
     render(){
         var userDetails = this.fetchUserDetails()
-        return(
-            <View>
-                <AppHeader title = "Settings" />
 
-                <View style = {styles.view}>
+        if( Dimensions.get('window').width >= 826 && ( Platform.OS === 'macos' || Platform.OS === 'windows' || Platform.OS === 'web' ) ){
+            return(
+                <View>
+                    <AppHeader title = "Settings" />
+    
+                    <View style = {styles.view}>
+    
+                    <ScrollView style = {{ width: '100%' }} contentContainerStyle = {{ alignItems: 'center' }}>
+                    <Icon type = 'font-awesome' name = 'cogs' size = {75} />
+    
+                    <TextInput 
+                       placeholder = {this.state.firstName}
+                       placeholderTextColor = {'#F4EBDB'}
+                       onChangeText = { (text)=>{
+                           this.setState({
+                               changedFirstName: text
+                           })
+                       }}
+                       style = {[ styles.textInput, { marginTop: '5%' } ]}
+                    />
+    
+                    <TextInput
+                       placeholder = {this.state.lastName}
+                       placeholderTextColor = {'#F4EBDB'}
+                       onChangeText = { (text)=>{
+                           this.setState({
+                               changedLastName: text
+                           })
+                       }}
+                       style = {styles.textInput}
+                    />
+    
+                    <TextInput 
+                       placeholder = {this.state.password}
+                       placeholderTextColor = {'#F4EBDB'}
+                       onChangeText = { (text)=>{
+                           this.setState({
+                               newPassword: text
+                           })
+                       }}
+                       style = {styles.textInput}
+                    />
+    
+                    <TouchableOpacity 
+                       onPress = {()=>{
+                        this.reauthenticateAndChangePassword();
+                        this.updateUserProfile();
+                       }}
+                       style = {styles.saveButton}>
+                        <Text style = {styles.buttonText}>Save Changes</Text>
+                    </TouchableOpacity>
+    
+                    <TouchableOpacity onPress = {()=>{
+                        this.deleteUser();
+                    }}
+                        style = {styles.deleteButton}>
+                        <Text style = {styles.buttonText}>Delete User</Text>
+                    </TouchableOpacity>
+    
+                    </ScrollView>
+    
+                    </View>
+    
+                </View>
+            )
+        }
+        else if( Platform.OS === 'android' || Platform.OS === 'ios' || width > 826 ){
+            return(
+                <View style = {{ display: 'flex', flexDirection: 'column' }}>
 
-                <ScrollView style = {{ width: '100%' }} contentContainerStyle = {{ alignItems: 'center' }}>
-                <Icon type = 'font-awesome' name = 'cogs' size = {75} />
+                    <View style = {{ height: '22%' }}>
+                        <AppHeader title = "Settings" />
+                    </View>
 
-                <TextInput 
-                   placeholder = {this.state.firstName}
-                   placeholderTextColor = {'#F4EBDB'}
-                   onChangeText = { (text)=>{
-                       this.setState({
-                           changedFirstName: text
-                       })
-                   }}
-                   style = {[ styles.textInput, { marginTop: '5%' } ]}
-                />
+                    <ScrollView style = {{ width: '100%' }} contentContainerStyle = {{ alignItems: 'center' }}>
 
-                <TextInput
-                   placeholder = {this.state.lastName}
-                   placeholderTextColor = {'#F4EBDB'}
-                   onChangeText = { (text)=>{
-                       this.setState({
-                           changedLastName: text
-                       })
-                   }}
-                   style = {styles.textInput}
-                />
-
-                <TextInput 
-                   placeholder = {this.state.password}
-                   placeholderTextColor = {'#F4EBDB'}
-                   onChangeText = { (text)=>{
-                       this.setState({
-                           newPassword: text
-                       })
-                   }}
-                   style = {styles.textInput}
-                />
-
-                <TouchableOpacity 
-                   onPress = {()=>{
-                    this.reauthenticateAndChangePassword();
-                    this.updateUserProfile();
-                   }}
-                   style = {styles.saveButton}>
-                    <Text style = {styles.buttonText}>Save Changes</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity onPress = {()=>{
-                    this.deleteUser();
-                }}
-                    style = {styles.deleteButton}>
-                    <Text style = {styles.buttonText}>Delete User</Text>
-                </TouchableOpacity>
-
-                </ScrollView>
+                        <Icon type = 'font-awesome' name = 'cogs' size = {75} />
+        
+                        <TextInput 
+                            placeholder = {this.state.firstName}
+                            placeholderTextColor = {'#F4EBDB'}
+                            onChangeText = { (text)=>{
+                                this.setState({
+                                    changedFirstName: text
+                                })
+                            }}
+                            style = {[ styles.textInput, { marginTop: '10%', width: '70%', paddingVertical: 8 } ]}
+                        />
+        
+                        <TextInput
+                            placeholder = {this.state.lastName}
+                            placeholderTextColor = {'#F4EBDB'}
+                            onChangeText = { (text)=>{
+                                this.setState({
+                                    changedLastName: text
+                                })
+                            }}
+                            style = {[ styles.textInput, { width: '70%', paddingVertical: 8 } ]}
+                        />
+        
+                        <TextInput 
+                            placeholder = {this.state.password}
+                            placeholderTextColor = {'#F4EBDB'}
+                            onChangeText = { (text)=>{
+                                this.setState({
+                                    newPassword: text
+                                })
+                            }}
+                            style = {[ styles.textInput, { width: '70%', paddingVertical: 8 } ]}
+                        />
+        
+                        <TouchableOpacity 
+                            onPress = {()=>{
+                                this.reauthenticateAndChangePassword();
+                                this.updateUserProfile();
+                            }}
+                            style = {[styles.saveButton, { width: '50%' }]}>
+                            <Text style = {styles.buttonText}>Save Changes</Text>
+                        </TouchableOpacity>
+        
+                        <TouchableOpacity 
+                            onPress = {()=>{
+                                this.deleteUser();
+                            }}
+                            style = {[styles.deleteButton, { width: '50%' }]}>
+                            <Text style = {styles.buttonText}>Delete User</Text>
+                        </TouchableOpacity>
+        
+                    </ScrollView>
 
                 </View>
-
-            </View>
-        )
+            )
+        }
     }
 
 }

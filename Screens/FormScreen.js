@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, TextInput, ScrollView, Dimensions, Platform } from 'react-native';
 import AppHeader from "../Components/AppHeader";
 import app from "../config";
 import { getFirestore, addDoc, collection } from 'firebase/firestore';
@@ -9,7 +9,6 @@ import { TextInputMask } from 'react-native-masked-text';
 import moment from 'moment';
 moment().format();
 var momentito = require('moment-timezone')
-var inputBg = '#4D648D'
 
 
 export default class FormScreen extends React.Component {
@@ -220,69 +219,144 @@ export default class FormScreen extends React.Component {
 
 
     render(){
-        return(
-            <View>
-                <AppHeader title = "Schedule Class" />
+        if( Dimensions.get('window').width >= 826 && ( Platform.OS === 'macos' || Platform.OS === 'web' || Platform.OS === 'windows' ) ){
+            return(
+                <View>
+                    <AppHeader title = "Schedule Class" />
+    
+                    <View style = {styles.view}>
+    
+                        <ScrollView style = {{ width: '100%' }} contentContainerStyle = {{ alignItems: 'center' }}>
 
-                <View style = {styles.view}>
+                            <Input 
+                                label = {'Class Name'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classNameField}
+                                leftIcon = {{ type: 'font-awesome', name: 'graduation-cap', color: '#F4EBDB', size: 22 }}
+                                autoFocus = {true}
+                                containerStyle = {styles.input}
+                            />
+        
+                            <Input
+                                label = {'Class Date'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classDateField}
+                                leftIcon = {{ type: 'font-awesome', name: 'calendar', color: '#F4EBDB', size: 22 }}
+                                containerStyle = {styles.input}
+                            />
+        
+                            <Input
+                                label = {'Class Starts at (in 24-hour clock)'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classStartingTiming}
+                                containerStyle = {styles.input}
+                                leftIcon = {{ type: 'font-awesome', name: 'hourglass-start', color: '#F4EBDB', size: 22 }}
+                            />
+        
+                            <Input
+                                label = {'Class Ends at (in 24-hour clock)'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classEndingTiming}
+                                containerStyle = {styles.input}
+                                leftIcon = {{ type: 'font-awesome', name: 'hourglass-end', color: '#F4EBDB', size: 22 }}
+                            />
+        
+                            <Input
+                                label = {'Other Details'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.otherDetailsField}
+                                containerStyle = {styles.input}
+                                leftIcon = {{ type: 'font-awesome', name: 'map', color: '#F4EBDB', size: 22 }}
+                            />
 
-                    <ScrollView style = {{ width: '100%' }} contentContainerStyle = {{ alignItems: 'center' }}>
+                            <TouchableOpacity
+                                style = {styles.button}
+                                onPress = {()=>{
+                                    this.scheduleClass();
+                                }}>
+                                    <Text style = {styles.buttonText}>Schedule Class</Text>
+                            </TouchableOpacity>
+    
+                        </ScrollView>
+    
+                    </View>
+    
+                </View>
+            )
+        }
+        else if( Dimensions.get('window').width < 826 || Platform.OS === 'android' || Platform.OS === 'ios' ){
+            return(
+                <View style = {{ display: 'flex', flexDirection: 'column', flex: 2 }}>
 
-                    <Input 
-                        label = {'Class Name'}
-                        labelStyle = {styles.label}
-                        InputComponent = {this.classNameField}
-                        leftIcon = {{ type: 'font-awesome', name: 'graduation-cap', color: '#F4EBDB', size: 22 }}
-                        autoFocus = {true}
-                        containerStyle = {styles.input}
-                    />
+                    <View style = { Platform.OS === 'ios' ? { height: '13%' } : { height: '11%' } }>
+                        <AppHeader title = "Schedule Class" />
+                    </View>
 
-                    <Input
-                        label = {'Class Date'}
-                        labelStyle = {styles.label}
-                        InputComponent = {this.classDateField}
-                        leftIcon = {{ type: 'font-awesome', name: 'calendar', color: '#F4EBDB', size: 22 }}
-                        containerStyle = {styles.input}
-                    />
-
-                    <Input
-                        label = {'Class Starts at (in 24-hour clock)'}
-                        labelStyle = {styles.label}
-                        InputComponent = {this.classStartingTiming}
-                        containerStyle = {styles.input}
-                        leftIcon = {{ type: 'font-awesome', name: 'hourglass-start', color: '#F4EBDB', size: 22 }}
-                    />
-
-                    <Input
-                        label = {'Class Ends at (in 24-hour clock)'}
-                        labelStyle = {styles.label}
-                        InputComponent = {this.classEndingTiming}
-                        containerStyle = {styles.input}
-                        leftIcon = {{ type: 'font-awesome', name: 'hourglass-end', color: '#F4EBDB', size: 22 }}
-                    />
-
-                    <Input
-                        label = {'Other Details'}
-                        labelStyle = {styles.label}
-                        InputComponent = {this.otherDetailsField}
-                        containerStyle = {styles.input}
-                        leftIcon = {{ type: 'font-awesome', name: 'map', color: '#F4EBDB', size: 22 }}
-                    />
-
-                    <TouchableOpacity
-                      style = {styles.button}
-                      onPress = {()=>{
-                          this.scheduleClass();
-                      }}>
-                        <Text style = {styles.buttonText}>Schedule Class</Text>
-                    </TouchableOpacity>
-
-                    </ScrollView>
+                    <View style = {[styles.view, { alignSelf: 'center', marginBottom: 30 }]}>
+    
+                        <ScrollView style = {{ width: '100%', marginTop: 30, alignSelf: 'center' }} contentContainerStyle = {{ alignItems: 'center', width: '80%' }}>
+    
+                            <Input 
+                                label = {'Class Name'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classNameField}
+                                leftIcon = {{ type: 'font-awesome', name: 'graduation-cap', color: '#F4EBDB', size: 22 }}
+                                autoFocus = {true}
+                                containerStyle = {[styles.input, { width: '100%' }]}
+                                inputContainerStyle = {{ paddingRight: 30, marginBottom: -10 }}
+                            />
+        
+                            <Input
+                                label = {'Class Date'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classDateField}
+                                leftIcon = {{ type: 'font-awesome', name: 'calendar', color: '#F4EBDB', size: 22 }}
+                                containerStyle = {[styles.input, { width: '100%' }]}
+                                inputContainerStyle = {{ paddingRight: 21, marginBottom: -10 }}
+                            />
+        
+                            <Input
+                                label = {'Class Starts at (in 24-hour clock)'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classStartingTiming}
+                                leftIcon = {{ type: 'font-awesome', name: 'hourglass-start', color: '#F4EBDB', size: 22 }}
+                                containerStyle = {[styles.input, { width: '100%' }]}
+                                inputContainerStyle = {{ paddingRight: 20, marginBottom: -10 }}
+                            />
+        
+                            <Input
+                                label = {'Class Ends at (in 24-hour clock)'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.classEndingTiming}
+                                leftIcon = {{ type: 'font-awesome', name: 'hourglass-end', color: '#F4EBDB', size: 22 }}
+                                containerStyle = {[styles.input, { width: '100%' }]}
+                                inputContainerStyle = {{ paddingRight: 20, marginBottom: -10 }}
+                            />
+        
+                            <Input
+                                label = {'Other Details'}
+                                labelStyle = {styles.label}
+                                InputComponent = {this.otherDetailsField}
+                                leftIcon = {{ type: 'font-awesome', name: 'map', color: '#F4EBDB', size: 22 }}
+                                containerStyle = {[styles.input, { width: '100%' }]}
+                                inputContainerStyle = {{ paddingRight: 23, marginBottom: -10 }}
+                            />
+        
+                            <TouchableOpacity
+                            style = {styles.button}
+                            onPress = {()=>{
+                                this.scheduleClass();
+                            }}>
+                                <Text style = {styles.buttonText}>Schedule Class</Text>
+                            </TouchableOpacity>
+    
+                        </ScrollView>
+    
+                    </View>
 
                 </View>
-
-            </View>
-        )
+            )
+        }
     }
 
 }
@@ -297,13 +371,13 @@ const styles = StyleSheet.create({
     },
 
     textInputMask: {
-        width: '100%',
         fontSize: 15,
-        fontFamily: 'Lora-Regular',
+        fontFamily: 'Lora',
         padding: 10,
         opacity: 0.68,
         borderBottomColor: '#F4EBDB',
-        borderBottomWidth: 1
+        borderBottomWidth: 1,
+        width: '100%',
     },
 
     label: {

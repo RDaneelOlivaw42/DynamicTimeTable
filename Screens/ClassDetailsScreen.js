@@ -1,13 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
-import { TextInputMask } from 'react-native-masked-text';
+import { View, Text, TouchableOpacity, StyleSheet, Dimensions, ScrollView, Platform } from 'react-native';
 import { Icon, Input, Card } from 'react-native-elements';
 import ClassDetailsHeader from '../Components/ClassDetailsHeader';
 import moment from 'moment';
 import app from '../config';
 import { getFirestore, deleteDoc, collection, where, query, addDoc, getDocs, limit, doc } from 'firebase/firestore';
 moment().format();
-import { LinearGradient } from 'expo-linear-gradient';
 
 const height = Dimensions.get('window').height
 const width = Dimensions.get('window').width
@@ -137,108 +135,194 @@ export default class ClassDetailsScreen extends React.Component {
     }
 
 
-    textInput = (value) => {
-        return(
-            <TextInputMask 
-                style = {styles.textInput}
-                value = {value}
-            />
-        )
-    }
-
-
     render(){
-        return(
-            <View>
-                <ClassDetailsHeader title = "Class Details" />
+        if( (width >= 826) && ( Platform.OS === 'macos' || Platform.OS === 'web' || Platform.OS === 'windows' ) ){
+            return(
+                <View>
+                    <ClassDetailsHeader title = "Class Details" />
+    
+                    <View style = {styles.container}>
+                        <ScrollView style = {{ width: '100%' }}>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'graduation-cap' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Name of Class:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.className}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'calendar' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Date of Class:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.classDate}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'hourglass-start' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Starts at (in 24-hour clock):</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassStartTime()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'hourglass-end' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Ends at (in 24-hour clock):</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassEndTime()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'clock-o' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Duration:</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassDuration()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'map' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Other Details:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.otherDetails}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                        </ScrollView>
+    
+                        <View style = {styles.buttonsContainer}>
+                            <TouchableOpacity 
+                                style = {[ styles.button, { marginRight: 60 } ]}
+                                onPress = {()=>{
+                                    this.deleteClass();
+                                }}>
+                                    <Text style = {styles.buttonText}>Cancel Class</Text>
+                            </TouchableOpacity>
+    
+                            <TouchableOpacity 
+                                style = {styles.button}
+                                onPress = {()=>{
+                                    this.classAttended();
+                                }}>
+                                    <Text style = {styles.buttonText}>Attended Class</Text>
+                            </TouchableOpacity>
+                        </View>
+    
+                    </View>
+    
+                </View>
+            )
+        }
+        else if( width < 826 || Platform.OS === 'android' || Platform.OS === 'ios' ){
+            return(
+                <View style = {{ display: 'flex', flex: 2, flexDirection: 'column' }}>
 
-            <View style = {styles.container}>
-            <ScrollView style = {{ width: '100%' }}>
+                    <View style = { Platform.OS === 'ios' ? { height: '13%' } : { height: '11%' } }>
+                        <ClassDetailsHeader title = "Class Details" />
+                    </View>
 
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'graduation-cap' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Name of Class:</Card.Title>
-                    <Text style = {styles.value}>  {this.state.className}</Text>
-                </Text>
 
-                <View style = {styles.line} />
-            </Card>
+                    <ScrollView style = {{ width: '100%' }}>
+                        <View style = {styles.container}>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'graduation-cap' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Name of Class:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.className}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'calendar' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Date of Class:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.classDate}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'hourglass-start' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Starts at (in 24-hour clock):</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassStartTime()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'hourglass-end' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Ends at (in 24-hour clock):</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassEndTime()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'clock-o' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Class Duration:</Card.Title>
+                                    <Text style = {styles.value}>  {this.returnClassDuration()}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
+    
+                            <Card containerStyle = {styles.cardContainer}>
+                                <Text>
+                                    <Icon type = 'font-awesome' name = 'map' color = {'#F4EBDB'} size = {22} />
+                                    <Card.Title style = {styles.title}>   Other Details:</Card.Title>
+                                    <Text style = {styles.value}>  {this.state.otherDetails}</Text>
+                                </Text>
+    
+                                <View style = {styles.line} />
+                            </Card>
 
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'calendar' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Date of Class:</Card.Title>
-                    <Text style = {styles.value}>  {this.state.classDate}</Text>
-                </Text>
+                            <TouchableOpacity 
+                                style = {styles.button}
+                                onPress = {()=>{
+                                    this.deleteClass();
+                                }}>
+                                    <Text style = {styles.buttonText}>Cancel Class</Text>
+                            </TouchableOpacity>
+    
+                            <TouchableOpacity 
+                                style = {[styles.button, { marginBottom: '0.5%' }]}
+                                onPress = {()=>{
+                                    this.classAttended();
+                                }}>
+                                    <Text style = {styles.buttonText}>Attended Class</Text>
+                            </TouchableOpacity>
 
-                <View style = {styles.line} />
-            </Card>
+                        </View>
+                    </ScrollView>
 
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'hourglass-start' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Class Starts at (in 24-hour clock):</Card.Title>
-                    <Text style = {styles.value}>  {this.returnClassStartTime()}</Text>
-                </Text>
-
-                <View style = {styles.line} />
-            </Card>
-
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'hourglass-end' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Class Ends at (in 24-hour clock):</Card.Title>
-                    <Text style = {styles.value}>  {this.returnClassEndTime()}</Text>
-                </Text>
-
-                <View style = {styles.line} />
-            </Card>
-
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'clock-o' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Class Duration:</Card.Title>
-                    <Text style = {styles.value}>  {this.returnClassDuration()}</Text>
-                </Text>
-
-                <View style = {styles.line} />
-            </Card>
-
-            <Card containerStyle = {styles.cardContainer}>
-                <Text>
-                    <Icon type = 'font-awesome' name = 'map' color = {'#F4EBDB'} size = {22} />
-                    <Card.Title style = {styles.title}>   Other Details:</Card.Title>
-                    <Text style = {styles.value}>  {this.state.otherDetails}</Text>
-                </Text>
-
-                <View style = {styles.line} />
-            </Card>
-
-            </ScrollView>
-
-            <View style = {styles.buttonsContainer}>
-            <TouchableOpacity 
-            style = {[ styles.button, { marginRight: 60 } ]}
-            onPress = {()=>{
-                this.deleteClass();
-            }}>
-                <Text style = {styles.buttonText}>Cancel Class</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-            style = {styles.button}
-            onPress = {()=>{
-                this.classAttended();
-            }}>
-                <Text style = {styles.buttonText}>Attended Class</Text>
-            </TouchableOpacity>
-            </View>
-
-            </View>
-
-            </View>
-        )
+                </View>
+            )
+        }
     }
 
 }

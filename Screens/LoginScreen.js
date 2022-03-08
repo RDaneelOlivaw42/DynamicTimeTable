@@ -266,7 +266,7 @@ export default class LoginScreen extends React.Component {
 
 
     render(){
-        if( Dimensions.get('window').width >= 826 ){
+        if( Dimensions.get('window').width >= 826 && ( Platform.OS === 'macos' || Platform.OS === 'windows' || Platform.OS === 'web' ) ){
             return(
                 <View style = {styles.container}>
                     <ImageBackground source = {require('../assets/bg_img.jpeg')} style = {styles.imageBackground} resizeMode = 'cover'>
@@ -339,7 +339,7 @@ export default class LoginScreen extends React.Component {
                 </View>
             )
         }
-        else if( Platform.OS === 'android'  || Platform.OS === 'ios' ){
+        else if( Platform.OS === 'android'  || Platform.OS === 'ios' || Dimensions.get('window').width < 826 ){
             return(
                 <View style = {{ width: '100%', height: '100%' }}>
                     <ImageBackground source = {require('../assets/bg_img.jpeg')} style = {styles.imageBackgroundAndroid} resizeMode = 'cover'>

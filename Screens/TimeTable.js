@@ -17,7 +17,6 @@ moment().format();
 var rain = 'rgba(44, 120, 115, 0.8)'
 var cadetBlue = '#004445'
 var blueBlack = '#021C1E'
-var greenery = '#6FB98F'
 var smog = '#F1DCC9'
 var smogSubtitle = '#F1DCC9'
 var periwinkle = '#F4EBDB'
@@ -76,7 +75,7 @@ const hours = [
         id: 11
     },
     {
-        title: "12 AM",
+        title: "12 PM",
         id: 12
     },
     {
@@ -176,7 +175,8 @@ export default class TimeTable extends React.Component {
             userId: '',
             classesData: [],
             runFetchClassesData: 0,
-            sentNotification: false
+            sentNotification: false,
+            onRefresh: false
         }
     }
 
@@ -348,10 +348,6 @@ export default class TimeTable extends React.Component {
 
 
     renderItemDaysPhone = ({ item, i }) => {
-        var x = item.id - 1
-        var y = item.id
-        var dates = this.getWeek()
-        var date = dates.slice(x, y)
         return(
             <ListItem bottomDivider = {true} style = {{ width: '100%', borderColor: '#434659', borderWidth: 2 }} containerStyle = {{ backgroundColor: blueBlack }}>
                 <ListItem.Content style = {{  height: height/18, alignItems: 'center', justifyContent: 'center' }}>
@@ -424,38 +420,38 @@ export default class TimeTable extends React.Component {
 
             if( isClass === true ){
                 return(
-                    <ListItem bottomDivider = {true} style = { 
-                        width >= 826 ? [ styles.renderItemActiveClass ] : styles.renderItemActiveClassPhone
-                    }
-                    containerStyle = {
-                        width >= 826 ? styles.listItemEvenContainer : {}
-                    }>
-                        <ListItem.Content>
-    
-                            <TouchableOpacity
-                                onPress = {()=>{
-                                    this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
-                                }}>
-                                    <ListItem.Title style = {styles.listItemEvenTitle}>{ definiteClassTime }</ListItem.Title>
-                                    <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>{ classData.class_name }</ListItem.Subtitle>
-                            </TouchableOpacity>
-    
-                        </ListItem.Content>
+                    <ListItem bottomDivider = {true} 
+                        style = {[styles.renderItemActiveClass, width >= 826 ? { borderWidth: 1 } : { borderWidth: 0.5 } ]}
+                        containerStyle = {
+                            width >= 826 ? styles.listItemEvenContainer : [styles.renderItemActiveClassPhone, { backgroundColor: cadetBlue }]
+                        }>
+                            <ListItem.Content>
+        
+                                <TouchableOpacity
+                                    onPress = {()=>{
+                                        this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
+                                    }}>
+                                        <ListItem.Title style = {styles.listItemEvenTitle}>{ definiteClassTime }</ListItem.Title>
+                                        <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>{ classData.class_name }</ListItem.Subtitle>
+                                </TouchableOpacity>
+        
+                            </ListItem.Content>
                     </ListItem>
                 )
             }
             else{
                 return(
-                    <ListItem bottomDivider = {true} style = {
-                        moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
-                    }
-                    containerStyle = { 
-                        moment().day() === day ? styles.renderItemTodayContentEven: styles.renderItemContentEven
-                    }>
-                        <ListItem.Content>
-                            <ListItem.Title style = {styles.listItemEvenTitle}>{item.title}</ListItem.Title>
-                            <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>No Class</ListItem.Subtitle>
-                        </ListItem.Content>
+                    <ListItem bottomDivider = {true} 
+                        style = {
+                            width < 826 ? [styles.renderItemClass, { borderWidth: 0.5 }] : moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
+                        }
+                        containerStyle = { 
+                            width < 826 ? styles.renderItemContentEven : moment().day() === day ? styles.renderItemTodayContentEven: styles.renderItemContentEven
+                        }>
+                            <ListItem.Content>
+                                <ListItem.Title style = {styles.listItemEvenTitle}>{item.title}</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemEvenSubtitle}>No Class</ListItem.Subtitle>
+                            </ListItem.Content>
                     </ListItem>
                 )
             }
@@ -465,37 +461,36 @@ export default class TimeTable extends React.Component {
 
             if( isClass === true ){
                 return(
-                    <ListItem bottomDivider = {true} style = {
-                        width >= 826 ? [ styles.renderItemActiveClass ] : [ styles.renderItemActiveClassPhone ]
-                    }
-                    containerStyle = {
-                        width >= 826 ? styles.listItemOddContainer : {}
-                    }>
-                        <ListItem.Content>
-                            <TouchableOpacity
-                                onPress = {()=>{
-                                    this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
-                                }}>
-                                    <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
-                                    <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
-                            </TouchableOpacity>
-                            
-                        </ListItem.Content>
+                    <ListItem bottomDivider = {true} 
+                        style = {[styles.renderItemActiveClass, width >= 826 ? { borderWidth: 1 } : { borderWidth: 0.5 } ]}
+                        containerStyle = {
+                            width >= 826 ? styles.listItemOddContainer : [styles.renderItemActiveClassPhone, { backgroundColor: rainClass }]
+                        }>
+                            <ListItem.Content>
+                                <TouchableOpacity
+                                    onPress = {()=>{
+                                        this.props.navigation.navigate('ClassDetailsScreen', { "data": classData })
+                                    }}>
+                                        <ListItem.Title style = {styles.listItemOddTitle}>{ definiteClassTime }</ListItem.Title>
+                                        <ListItem.Subtitle style = {styles.listItemOddSubtitle}>{ classData.class_name }</ListItem.Subtitle>
+                                </TouchableOpacity>          
+                            </ListItem.Content>
                     </ListItem>
                 )
             }
             else{
                 return(
-                    <ListItem bottomDivider = {true} style = {
-                        moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
-                    } 
-                    containerStyle = { 
-                        moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
-                    }>
-                        <ListItem.Content>
-                            <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
-                            <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
-                        </ListItem.Content>
+                    <ListItem bottomDivider = {true} 
+                        style = {
+                            width < 826 ? [styles.renderItemClass, { borderWidth: 0.5 }] : moment().day() === day ? styles.renderItemTodayClass : styles.renderItemClass
+                        } 
+                        containerStyle = { 
+                            width < 826 ? styles.renderItemContentOdd : moment().day() === day ? styles.renderItemTodayContentOdd: styles.renderItemContentOdd
+                        }>
+                            <ListItem.Content>
+                                <ListItem.Title style = {styles.listItemOddTitle}>{item.title}</ListItem.Title>
+                                <ListItem.Subtitle style = {styles.listItemOddSubtitle}>No Class</ListItem.Subtitle>
+                            </ListItem.Content>
                     </ListItem>
                 )
             }
@@ -532,17 +527,30 @@ export default class TimeTable extends React.Component {
         var week = []
 
         for ( var i = 1 ; i <= 7 ; i++ ){
-            var firstDay = currentDate.getDate() - currentDate.getDay() + i
-            var day = new Date(currentDate.setDate(firstDay)).toISOString().slice(8, 10)
+            var firstDay = currentDate.getDate() - currentDate.getDay() + i 
+            var day = moment(new Date(currentDate.setDate(firstDay))).format().substring(8, 10)
             week.push(day)
         }
 
         return week;
     }
+
+
+    _onRefresh = () => {
+        this.setState({
+            onRefresh: true
+        })
+
+        this.fetchClassesData().then( ()=>{
+            this.setState({
+                onRefresh: false
+            })
+        })
+    }
  
 
     render(){
-        if( Dimensions.get('window').width >= 826 ){
+        if( Dimensions.get('window').width >= 826 && ( Platform.OS === 'macos' || Platform.OS === 'windows' || Platform.OS === 'web' ) ){
 
             return(
                 <View style = {{ flex: 2 , height: '100%' }}>
@@ -564,18 +572,12 @@ export default class TimeTable extends React.Component {
     
                         </View>
     
-                        <ScrollView refreshControl = { 
-                            <RefreshControl refreshing = {true} onRefresh = { ()=>{
-                                try{
-                                    this.fetchClassesData()
-                                    console.log("Refreshed")
-                                }
-                                catch(error){
-                                    var errorMessage = error.message
-                                    return alert(errorMessage)
-                                }
-                            }}/>
-                        }>
+                        <ScrollView refreshControl = {
+                                <RefreshControl 
+                                    refreshing = {this.state.onRefresh}
+                                    onRefresh = {this._onRefresh}
+                                />
+                            }>
 
                             <View style = {{ height: '100%', width: '100%', display: 'flex', flexDirection: 'row', flex: 8 }}>
 
@@ -645,31 +647,36 @@ export default class TimeTable extends React.Component {
             )
     
         }
-        else{
+        else if( Platform.OS === 'android' || Platform.OS === 'ios' ){
             return(
                 <View style = {{ flex: 2, flexDirection: 'column' }}>
 
-                    <View style = {{ position: 'absolute', height: '11%' }}>
+                    <View style = { Platform.OS === 'ios' ? styles.appHeaderiOS : styles.appHeaderAndroid }>
                         <AppHeader title = "Time Table" />
                     </View>
                     
-                    <View style = {{ top: '11%' }}>
-                        <View style = {{ width: '70%', flexDirection: 'column', alignSelf: 'center' }}>
+                    <View style = { Platform.OS === 'ios' ? styles.flatListViewiOS : styles.flatListViewAndroid }>
 
-                            <FlatList
-                                data = {this.getTodayDay()}
-                                renderItem = {this.renderItemDaysPhone}
-                                keyExtractor = {this.keyExtractor}
-                                style = {{ width: '100%', alignSelf: 'center' }}
-                            />
+                        <FlatList
+                            data = {this.getTodayDay()}
+                            renderItem = {this.renderItemDaysPhone}
+                            keyExtractor = {this.keyExtractor}
+                            style = {{ width: '100%', alignSelf: 'center' }}
+                        />
 
-                            <FlatList
-                                data = {hours}
-                                renderItem = { (item) => this.renderItem(item, this.getDay()) }
-                                keyExtractor = {this.keyExtractor}
-                            />
+                        <FlatList
+                            data = {hours}
+                            renderItem = { (item) => this.renderItem(item, this.getDay()) }
+                            keyExtractor = {this.keyExtractor}
+                            removeClippedSubviews = {false}
+                            refreshControl = {
+                                <RefreshControl 
+                                    refreshing = {this.state.onRefresh}
+                                    onRefresh = {this._onRefresh}
+                                />
+                            }
+                        />
 
-                        </View>
                     </View>
         
                 </View>
@@ -688,8 +695,7 @@ const styles = StyleSheet.create({
     }, 
 
     renderItemActiveClass: {
-        borderColor: '#F4EBDB',
-        borderWidth: 1
+        borderColor: smog,
     },
 
     renderItemContent: {
@@ -710,14 +716,10 @@ const styles = StyleSheet.create({
         height: height/12
     },
 
-    renderItemClassPhone: {
-        borderColor: blueBlack,
-        borderWidth: 1,
-    },
-
     renderItemActiveClassPhone: {
-        borderColor: 'green',
-        borderWidth: 2, 
+        borderColor: '#fff',
+        borderWidth: 1,
+        height: height/12
     },
 
     listItemDaysText: {
@@ -775,6 +777,31 @@ const styles = StyleSheet.create({
     renderItemContentEven: {
         height: height/12,
         backgroundColor: cadetBlue 
+    },
+
+    appHeaderiOS: {
+        position: 'absolute', 
+        height: '13%'
+    },
+
+    flatListViewiOS: {
+        top: '13%', 
+        width: '70%', 
+        flexDirection: 'column', 
+        alignSelf: 'center'
+    },
+
+    appHeaderAndroid: {
+        position: 'absolute', 
+        height: '11%'
+    },
+
+    flatListViewAndroid: {
+        top: '11%', 
+        width: '70%', 
+        flexDirection: 'column', 
+        alignSelf: 'center', 
+        elevation: 200
     }
 
 })

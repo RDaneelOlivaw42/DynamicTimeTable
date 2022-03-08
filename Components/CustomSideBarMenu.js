@@ -3,7 +3,6 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Icon, Avatar } from 'react-native-elements';
 import { DrawerItems } from 'react-navigation-drawer';
 import { signOut, getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, query, collection, where, limit, getDocs } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import app from '../config';
 import * as ImagePicker from 'expo-image-picker';
@@ -159,7 +158,8 @@ export default class CustomSideBarMenu extends React.Component {
 const styles = StyleSheet.create({
 
     container: {
-        flex: 1
+        flex: 1,
+        height: '100%'
     },
 
     drawerItemsContainer: {
@@ -167,7 +167,6 @@ const styles = StyleSheet.create({
     },
     
     logOutContainer: {
-        flex: 0.02,
         justifyContent: 'center',
         paddingBottom: 30
     },

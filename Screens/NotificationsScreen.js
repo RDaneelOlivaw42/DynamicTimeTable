@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, StyleSheet, ScrollView, Dimensions, Platform } from 'react-native';
 import { ListItem, Icon } from 'react-native-elements';
 import AppHeader from '../Components/AppHeader';
 import app from '../config';
-import { getFirestore, getDocs, collection, query, where, updateDoc, doc, limit, getDocFromCache } from 'firebase/firestore';
+import { getFirestore, getDocs, collection, query, where, updateDoc, doc, limit } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import moment from 'moment';
 moment().format();
@@ -58,7 +58,7 @@ export default class NotificationsScreen extends React.Component {
         const db = getFirestore(app)
         var userId = this.state.userId
         
-        const q = query( collection(db, 'All Notifications'), where('user_id','==',userId), where('mark_as_read','==',false) )
+        const q = query( collection(db, 'All Notifications'), where('user_id','==',userId), where('mark_as_read','==',false), limit(12) )
 
         const querySnapshot = await getDocs(q)
 
@@ -185,46 +185,88 @@ export default class NotificationsScreen extends React.Component {
 
 
     render(){
-        return(
-            <View>
-            
-            <AppHeader title = "Notifications" />
-
-            {
-                this.state.notificationsData.length === 0 ?
-                (
-                    <View style = {styles.nullNotificationsContainer}>
-                        <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>You have no notifications</Text>
-                    </View>
-                )
-                : (
-                    <View style = {{ marginLeft: '3%', marginRight: '3%' }}>
-
-                        <View style = {{ marginTop: '0.6%' }}>
-                            <Text>
-                            <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>Notifications </Text>
-                            <Icon name = 'sort-desc' type = 'font-awesome' color = '#696969' size = {35} />
-                            </Text>
-                        </View>
-
-                        <ScrollView>
-                            <View>
-
-                                <FlatList 
-                                    data = {this.state.notificationsData}
-                                    renderItem = {this.renderItem}
-                                    keyExtractor = {this.keyExtractor}
-                                    scrollEnabled = {true}
-                                />
-
+        if( Dimensions.get('window').width >= 826 && ( Platform.OS === 'macos' || Platform.OS === 'web' || Platform.OS === 'windows' ) ){
+            return(
+                <View>
+    
+                    <AppHeader title = "Notifications" />
+    
+                    {
+                        this.state.notificationsData.length === 0 ?
+                        (
+                            <View style = {styles.nullNotificationsContainer}>
+                                <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>You have no notifications</Text>
                             </View>
-                        </ScrollView>
+                        )
+                        : (
+                            <View style = {{ marginLeft: '3%', marginRight: '3%' }}>
+    
+                                <View style = {{ marginTop: '0.6%' }}>
+                                    <Text>
+                                    <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>Notifications </Text>
+                                    <Icon name = 'sort-desc' type = 'font-awesome' color = '#696969' size = {35} />
+                                    </Text>
+                                </View>
+    
+                                <ScrollView>
+                                    <View>
+                                        <FlatList 
+                                            data = {this.state.notificationsData}
+                                            renderItem = {this.renderItem}
+                                            keyExtractor = {this.keyExtractor}
+                                            scrollEnabled = {true}
+                                        />
+                                    </View>
+                                </ScrollView>
+    
+                            </View>
+                        )
+                    }
+                </View>
+            )
+        }
+        else if( Dimensions.get('screen').width < 826 || Platform.OS === 'android' || Platform.OS === 'ios' ){
+            return(
+                <View style = {{ display: 'flex', flex: 2, flexDirection: 'column' }}>
 
+                    <View style = { Platform.OS === 'ios' ? { height: '13%' } : { height: '11%' } }>
+                        <AppHeader title = "Notifications" />
                     </View>
-                )
-            }
-            </View>
-        )
+
+                    {
+                        this.state.notificationsData.length === 0 ?
+                        (
+                            <View style = {styles.nullNotificationsContainer}>
+                                <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>You have no notifications</Text>
+                            </View>
+                        )
+                        : (
+                            <View style = {{ marginLeft: '3%', marginRight: '3%' }}>
+    
+                                <View style = {{ marginTop: '0.6%' }}>
+                                    <Text>
+                                    <Text style = {{ fontFamily: 'Lora', fontSize: 17 }}>Notifications </Text>
+                                    <Icon name = 'sort-desc' type = 'font-awesome' color = '#696969' size = {35} />
+                                    </Text>
+                                </View>
+    
+                                <ScrollView>
+                                    <View>
+                                        <FlatList 
+                                            data = {this.state.notificationsData}
+                                            renderItem = {this.renderItem}
+                                            keyExtractor = {this.keyExtractor}
+                                            initialNumToRender = {10}
+                                        />
+                                    </View>
+                                </ScrollView>
+    
+                            </View>
+                        )
+                    }
+                </View>
+            )
+        }
     }
 
 }

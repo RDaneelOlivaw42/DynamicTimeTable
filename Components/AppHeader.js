@@ -2,11 +2,11 @@ import React from 'react';
 import { Header, Icon, Badge } from 'react-native-elements';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DrawerActions } from 'react-navigation-drawer';
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { withNavigation } from 'react-navigation';
 import app from '../config';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, query, collection, where, limit, getDocs } from 'firebase/firestore'
+import { getFirestore, query, collection, where, getDocs } from 'firebase/firestore'
 
 class AppHeader extends React.Component {
 
@@ -72,7 +72,7 @@ class AppHeader extends React.Component {
             return(
                 <SafeAreaProvider>
 
-                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = {{ paddingRight: 9, paddingTop: 3 }}
+                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = { Platform.OS === 'android' ? styles.androidBell : styles.webBell }
                           onPress = {()=>{ this.props.navigation.navigate('NotificationsScreen') }} />
 
                 </SafeAreaProvider>
@@ -81,13 +81,13 @@ class AppHeader extends React.Component {
         else{
             return(
                 <SafeAreaProvider>
-                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = {{ paddingRight: 9, paddingTop: 3 }}
+                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = { Platform.OS === 'android' ? styles.androidBell : styles.webBell }
                           onPress = {()=>{ this.props.navigation.navigate('NotificationsScreen') }} />
     
                     <Badge 
                         value = {this.state.value}
                         status = "error"
-                        containerStyle = {{ position: 'absolute', top: 1, right: 5 }}
+                        containerStyle = { Platform.OS === 'android' ? styles.androidBadge : styles.webBadge }
                     />
                 </SafeAreaProvider>
             )
@@ -108,19 +108,21 @@ class AppHeader extends React.Component {
                         <Icon
                           type = 'font-awesome'
                           name = 'bars'
-                          style = { Dimensions.get('window').width >= 826 ? { paddingLeft: 15, paddingTop: 7 } : { paddingLeft: 15, paddingTop: 10 } } 
                           onPress = { ()=>{
                               this.props.navigation.dispatch(DrawerActions.toggleDrawer());
                           }}
                           color = {'#F4EBDB'}
                         />
                     }
+                    leftContainerStyle = {{ justifyContent: 'center', paddingLeft: 8 }}
 
                     rightComponent = { < this.BellIconWithBadge /> }
 
+                    rightContainerStyle = { Platform.OS === 'android' ? styles.rightContainerAndroid : styles.rightContainerWeb }
+
                     centerComponent = {{
                         text: this.props.title,
-                        style: { fontSize: 30, textAlign: 'center', color: '#F4EBDB', fontFamily: 'Lora' }
+                        style: { fontSize: 28, textAlign: 'center', color: '#F4EBDB', fontFamily: 'Lora' }
                     }}
                 />
             </SafeAreaProvider>
@@ -138,4 +140,37 @@ const styles = StyleSheet.create({
         padding: 20
     },
 
-})
+    androidBell: {
+        paddingRight: 13, 
+        paddingTop: 3
+    },
+
+    androidBadge: {
+        position: 'absolute', 
+        right: 0
+    },
+
+    rightContainerAndroid: {
+        justifyContent: 'center', 
+        paddingTop: 5, 
+        paddingRight: 4
+    },
+
+    webBell: {
+        paddingRight: 7, 
+        paddingTop: 3
+    },
+
+    webBadge: {
+        position: 'absolute', 
+        right: 1
+    },
+
+    rightContainerWeb: {
+        justifyContent: 'center', 
+        paddingRight: 4
+    }
+
+});
+
+// this.props.navigation.dispatch(DrawerActions.toggleDrawer());
