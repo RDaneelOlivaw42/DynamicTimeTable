@@ -72,7 +72,7 @@ class AppHeader extends React.Component {
             return(
                 <SafeAreaProvider>
 
-                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = { Platform.OS === 'android' ? styles.androidBell : styles.webBell }
+                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = {styles.bell}
                           onPress = {()=>{ this.props.navigation.navigate('NotificationsScreen') }} />
 
                 </SafeAreaProvider>
@@ -81,13 +81,13 @@ class AppHeader extends React.Component {
         else{
             return(
                 <SafeAreaProvider>
-                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = { Platform.OS === 'android' ? styles.androidBell : styles.webBell }
+                    <Icon type = 'font-awesome' name = 'bell' size = {28} color = {'#F4EBDB'} style = {styles.bell}
                           onPress = {()=>{ this.props.navigation.navigate('NotificationsScreen') }} />
     
                     <Badge 
                         value = {this.state.value}
                         status = "error"
-                        containerStyle = { Platform.OS === 'android' ? styles.androidBadge : styles.webBadge }
+                        containerStyle = {styles.badge}
                     />
                 </SafeAreaProvider>
             )
@@ -114,11 +114,11 @@ class AppHeader extends React.Component {
                           color = {'#F4EBDB'}
                         />
                     }
-                    leftContainerStyle = {{ justifyContent: 'center', paddingLeft: 8 }}
+                    leftContainerStyle = {styles.leftContainer}
 
                     rightComponent = { < this.BellIconWithBadge /> }
 
-                    rightContainerStyle = { Platform.OS === 'android' ? styles.rightContainerAndroid : styles.rightContainerWeb }
+                    rightContainerStyle = {styles.rightContainer}
 
                     centerComponent = {{
                         text: this.props.title,
@@ -133,6 +133,90 @@ class AppHeader extends React.Component {
 
 export default withNavigation(AppHeader);
 
+const stylesAndroid = StyleSheet.create({
+
+    background: {
+        padding: 20
+    },
+
+    bell: {
+        paddingRight: 13, 
+        paddingTop: 3
+    },
+
+    badge: {
+        position: 'absolute', 
+        right: 0
+    },
+
+    rightContainer: {
+        justifyContent: 'center', 
+        paddingTop: 5, 
+        paddingRight: 4
+    },
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 8 
+    }
+
+})
+
+const stylesIOS = StyleSheet.create({
+
+    background: {
+        padding: 20
+    },
+
+    bell: {
+        paddingRight: 7, 
+        paddingTop: 3
+    },
+
+    badge: {
+        position: 'absolute', 
+        right: 1
+    },
+
+    rightContainer: {
+        justifyContent: 'center', 
+        paddingRight: 4
+    },
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 8 
+    }
+
+})
+
+const styles2 = StyleSheet.create({
+
+    background: {
+        padding: 20
+    },
+
+    bell: {
+        paddingRight: 7, 
+        paddingTop: 3
+    },
+
+    badge: {
+        position: 'absolute', 
+        right: 1
+    },
+
+    rightContainer: {
+        justifyContent: 'center', 
+        paddingRight: 4
+    },
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 8 
+    }
+
+})
 
 const styles = StyleSheet.create({
 

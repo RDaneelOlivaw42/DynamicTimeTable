@@ -2,7 +2,7 @@ import React from 'react';
 import { Header, Icon } from 'react-native-elements';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { withNavigation } from 'react-navigation';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 class ClassDetailsHeader extends React.Component {
 
@@ -24,7 +24,7 @@ class ClassDetailsHeader extends React.Component {
                         />
                     }
 
-                    leftContainerStyle = { Platform.OS === 'android' ? { justifyContent: 'center', paddingLeft: 8 } : { justifyContent: 'center', paddingLeft: 15 }}
+                    leftContainerStyle = {styles.leftContainer}
 
                     centerComponent = {{
                         text: this.props.title,
@@ -38,3 +38,30 @@ class ClassDetailsHeader extends React.Component {
 }
 
 export default withNavigation(ClassDetailsHeader);
+
+const stylesAndroid = StyleSheet.create({
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 8 
+    }
+
+})
+
+const stylesIOS = StyleSheet.create({
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 15 
+    },
+
+})
+
+const styles2 = StyleSheet.create({
+
+    leftContainer: {
+        justifyContent: 'center', 
+        paddingLeft: 15 
+    },
+
+})
